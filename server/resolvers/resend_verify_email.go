@@ -50,6 +50,12 @@ func ResendVerifyEmailResolver(ctx context.Context, params model.ResendVerifyEma
 		return res, fmt.Errorf(`verification request not found`)
 	}
 
+	currentTime := time.Now().Unix()
+	if currentTime < verificationRequest.ExpiresAt {
+		log.Debug("Existing verification email has not expired yet")
+		return res, fmt.Errorf(`existing verification email has not expired yet, please check your inbox or wait until it expires`)
+	}
+
 	// delete current verification and create new one
 	err = db.Provider.DeleteVerificationRequest(ctx, verificationRequest)
 	if err != nil {
